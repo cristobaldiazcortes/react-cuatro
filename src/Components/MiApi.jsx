@@ -1,39 +1,72 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import {Table} from 'react-bootstrap';
+import { Table } from 'react-bootstrap';
 
-const baseUrl = "https://aves.ninjas.cl/api/birds";
-console.log(baseUrl);
 
 const MiApi = () => {
-  const [datos, setDatos] = useState([]);
-  const [filtro, setFiltro] = useState("");
+  
+    //setear los hooks useState
+  const [ aves, setAves ] = useState([])
+  const [ buscador, setBuscador ] = useState("")
+  //función para traer los datos de la API
+  const baseUrl = "https://aves.ninjas.cl/api/birds";
+  console.log(baseUrl);
 
-  useEffect(() => {
-    const fetchDatos = async () => {
-      let urlFiltro = baseUrl;
-      if (filtro !== "") {
-        urlFiltro = baseUrl + "?name=" + filtro;
-      }
+  const mostrarData = async () => {
+    const response = await fetch(baseUrl)
+    const data = await response.json()
+   
+    //console.log(data)
+    setAves(data)
+  }
 
-      const response = await fetch(urlFiltro);
-      const respDatos = await response.json();
-      console.log(respDatos);//veo como llega la informacion
-      setDatos(respDatos);
-    };
 
-    fetchDatos();
-  }, [filtro]);
-
-  const capturaNombrebuscar = (e) => {
-    setFiltro(e.target.value);
+   //buscador
+  const BuscadorAves = (e) => { 
+    setBuscador(e.target.value);
+    //console.log(e.target)
   };
-  console.log(capturaNombrebuscar);
+
+
+     //metodo de filtrado  
+   let resultados = []
+   if(!buscador)
+   {
+       resultados = aves
+   }else{
+        resultados = aves.filter( (aveFiltro) =>
+        aveFiltro.name.spanish.toLowerCase().includes(buscador.toLocaleLowerCase())
+    )
+   } 
+   
+     //ordenamiento mediante metodo sort
+  
+    /*  const ordenamientoAves = (mostrarData) => { 
+      ordenamientoAves.sort(mostrarData)
+
+    };   */ 
+
+    useEffect(() => {
+  
+    mostrarData()
+  
+    },[]) 
   
   return (
-    <>
+  <>
       <h1>Aves de Chile</h1>
-      <input value={filtro} onChange={capturaNombrebuscar}></input>
+      <div className="input-group">
+        <input
+          onChange={BuscadorAves}
+          value={buscador}
+          type="text"
+          className="form-control rounded porte-barra"
+          placeholder="Búsqueda por nombre"
+          aria-label="Search"
+          aria-describedby="search-addon"
+        />
+  
+      </div>
 
       <Table striped bordered hover variant="dark">
       <thead>
@@ -45,27 +78,18 @@ const MiApi = () => {
         </tr>
       </thead> 
       <tbody>
-          {datos.map((dato) => ( 
-              <tr key={dato.uid}>
-                  <td>{dato.name.spanish}</td>
-                  <td>{dato.name.latin}</td>
-                  <td><img src={dato.images.main} ></img></td>
+          {   resultados.map((ave) => ( 
+              <tr key={ave.uid}>
+                  <td>{ave.name.spanish}</td>
+                  <td>{ave.name.latin}</td>
+                  <td><img src={ave.images.main} ></img></td>
               </tr>
           ))}  
       </tbody>
-    </Table>
+      </Table>
 
-
-
-
-     {/*  <ul>
-        {datos.map((dato) => (
-          <li key={dato.uid}>
-            Efemeride:{dato.name.spanish}- Fecha:{dato.name.latin} 
-          </li>
-        ))}
-      </ul> */}
-    </>
+     
+  </>
   );
 };
 
